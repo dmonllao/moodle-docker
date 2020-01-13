@@ -58,6 +58,21 @@ else
     dockercompose="${dockercompose} -f ${basedir}/selenium.debug.yml"
 fi
 
+# Get the mlbackend_python version for the current moodle release.
+moodle_version=$(grep "^\$branch " "$MOODLE_DOCKER_WWWROOT/version.php" | grep -o "[0-9]*")
+
+if [ "$moodle_version" -lt "38" ]; then
+    # No support for mlbackend_python in a separate server before 3.8 so its
+    # tests will be ignored. Setting it to 2.3.0 so we silent the warning
+    # we would get if the var is not set.
+    export  MOODLE_DOCKER_MLBACKEND_PYTHON_TAG="2.3.0-python3.7.5"
+elif [ "$moodle_version" == "38" ]; then
+    export MOODLE_DOCKER_MLBACKEND_PYTHON_TAG="2.3.0-python3.7.5"
+else
+    # No need to require an if statement for each major version if no changes.
+    export MOODLE_DOCKER_MLBACKEND_PYTHON_TAG="2.4.0-python3.7.5"
+fi
+
 # External services
 if [[ ! -z "$MOODLE_DOCKER_PHPUNIT_EXTERNAL_SERVICES" ]];
 then
